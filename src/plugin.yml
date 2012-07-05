@@ -1,0 +1,21 @@
+name: CommandCooldown
+description: Force certain commands to have a configurable cooldown.
+author: ArSkHelios of ShadyCraft
+
+version: 1.0.0
+load: POSTWORLD
+main: me.arskhelios.commandcooldown.CommandCooldown
+database: false
+softdepend: [bPermissions, PermissionsEx, GroupManager, PermissionsBukkit, zPermissions]
+
+commands:
+    commandcooldown:
+        description: Reload the CommandCooldown config.
+        aliases: [ccd]
+        permission: commandcooldown.reload
+        usage: "Usage: /<command> reload"
+
+permissions:
+    commandcooldown.reload:
+        description: Reload the CommandCooldown config.
+        default: op

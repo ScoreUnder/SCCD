@@ -1,0 +1,5 @@
+warp: 200
+tell: 40
+#Please do not touch the line below this. Add all commands on new lines above this. The timing is by ticks, 20 ticks = 1 second.
+#For 2 part commands, just do f desc: xxx
+thenumberaftereachcommandisdelayinserverticks: 1337
