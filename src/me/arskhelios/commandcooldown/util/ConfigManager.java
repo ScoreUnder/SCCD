@@ -1,10 +1,11 @@
 package me.arskhelios.commandcooldown.util;
 
 import java.io.File;
+import java.util.logging.Level;
 import me.arskhelios.commandcooldown.CommandCooldown;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.PluginDescriptionFile;
 
 public class ConfigManager
 {
@@ -39,7 +40,7 @@ public class ConfigManager
     {
       String error = String.format("%s couldn't load %s from file. Attempting to load the embedded %2$s.", new Object[] { this.plugin.getDescription().getName(), this.configName });
 
-      this.plugin.logging.logException(error, e, false);
+      this.plugin.getLogger().log(Level.SEVERE, error, e);
       try
       {
         yamlConfig.load(this.plugin.getResource(this.configName));
@@ -48,7 +49,7 @@ public class ConfigManager
       {
         error = String.format("%s couldn't load the embedded %s.", new Object[] { this.plugin.getDescription().getName(), this.configName });
 
-        this.plugin.logging.logException(error, e1, true);
+        this.plugin.getLogger().log(Level.SEVERE, error, e1);
 
         this.config = null;
         return;
@@ -71,7 +72,7 @@ public class ConfigManager
       {
         String error = String.format("%s couldn't create a new %s. %2$s will not be saved.", new Object[] { this.plugin.getDescription().getName(), this.configName });
 
-        this.plugin.logging.logException(error, e, false);
+        this.plugin.getLogger().log(Level.SEVERE, error, e);
         return;
       }
     }
@@ -84,13 +85,13 @@ public class ConfigManager
     {
       String error = String.format("%s couldn't save %s to file.", new Object[] { this.plugin.getDescription().getName(), this.configName });
 
-      this.plugin.logging.logException(error, e, false);
+      this.plugin.getLogger().log(Level.SEVERE, error, e);
     }
   }
-
-  public long getLong(String path)
+  
+  public long getCommandDelay(String path)
   {
-    return this.config.getLong(path);
+    return (long) (this.config.getDouble(path) * 1000);
   }
 
   public boolean contains(String path)

@@ -1,55 +1,93 @@
 package me.arskhelios.commandcooldown;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import me.arskhelios.commandcooldown.util.ConfigManager;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 
-public class EventListener
-  implements Listener
+public class EventListener implements Listener
 {
   private final CommandCooldown plugin;
-  private final BukkitScheduler scheduler;
 
   public EventListener(CommandCooldown instance)
   {
     this.plugin = instance;
-    this.scheduler = instance.getServer().getScheduler();
   }
 
-  @EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
-  public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-    String command = event.getMessage().replace("/", "").split(" ")[0].toLowerCase();
-    long delay = this.plugin.config.getLong(command);
-    int delayInSeconds = (int) (delay / 20); 
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+  public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event)
+  {
+    String command = event.getMessage().substring(1).trim().toLowerCase();
+    command = getLongestMatchingCommand(command);
+
+    long delay = this.plugin.config.getCommandDelay(command);
+
+    if (delay == 0)
+    {
+      return; // No delay, let's not go through the rest of it too.
+    }
+
+    long currTime = System.currentTimeMillis();
     Player player = event.getPlayer();
     String name = player.getName();
 
-    if (this.plugin.cooldowns.containsKey(name))
+    Map<String, Long> playerCooldowns = this.plugin.cooldowns.get(name);
+
+    if (playerCooldowns == null)
     {
-      if (((Set)this.plugin.cooldowns.get(name)).contains(command))
+      playerCooldowns = new HashMap<String, Long>();
+      this.plugin.cooldowns.put(name, playerCooldowns);
+    }
+    else if (playerCooldowns.containsKey(command))
+    {
+      long timeLeft = playerCooldowns.get(command) - currTime;
+      if (timeLeft > 0)
       {
         event.setCancelled(true);
- player.sendMessage(ChatColor.RED + "That command is currently on cooldown for "+delayInSeconds+" seconds");
-
+        player.sendMessage(ChatColor.RED + "Please wait " + numSeconds(ceilDiv(timeLeft, 1000)) + " before using that command again.");
         return;
       }
-
     }
-    else
+
+    playerCooldowns.put(command, currTime + delay);
+  }
+
+  public static String numSeconds(long num)
+  {
+    if (num == 1)
     {
-      this.plugin.cooldowns.put(name, new HashSet());
+      return "1 second";
     }
+    return num + " seconds";
+  }
 
-    ((Set)this.plugin.cooldowns.get(name)).add(command);
-    this.scheduler.scheduleSyncDelayedTask(this.plugin, new CommandDelay(this.plugin, name, command), delay);
+  private String getLongestMatchingCommand(String command)
+  {
+    while (!this.plugin.config.contains(command))
+    {
+      int pos = command.lastIndexOf(' ');
+      if (pos == -1)
+      {
+        break;
+      }
+      command = command.substring(0, pos);
+    }
+    return command;
+  }
+
+  /**
+   * Divides and rounds up.
+   * Equivalent of (int)Math.ceil(num / (double) div).
+   * @param num Number to divide
+   * @param div Divisor
+   * @return the result of the division rounded up
+   */
+  public static long ceilDiv(long num, long div)
+  {
+    return (num + div - 1) / div;
   }
 }

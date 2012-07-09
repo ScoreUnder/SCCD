@@ -1,5 +1,11 @@
-warp: 200
-tell: 40
-#Please do not touch the line below this. Add all commands on new lines above this. The timing is by ticks, 20 ticks = 1 second.
-#For 2 part commands, just do f desc: xxx
-thenumberaftereachcommandisdelayinserverticks: 1337
+# Use this format for command delays:
+# command: delay
+# The delay is in seconds and can include a decimal point (e.g. 2.5 for two and a half seconds)
+# Longer commands take priority over shorter ones, so if you include
+# "warp" and "warp secret", the delay for "warp secret" will be used when they type /warp secret,
+# but the delay for /warp will not be used. You can set this to 0 to disable delay on
+# certain usages of a command but not on all others.
+warp: 10
+tell: 2
+f home: 10
+
